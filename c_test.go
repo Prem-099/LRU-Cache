@@ -1,11 +1,11 @@
 package main
 
-
-/*import (
+/*
+import (
 	"testing"
 	"github.com/Prem-099/lru-cache/lru"
 )
-
+/*
 func BenchmarkTest( b *testing.B){
 	cache := lru.New[string,int](1000)
 	cache.Put("a",1)
@@ -58,7 +58,7 @@ func BenchmarkHeavyWriteShard(b *testing.B) {
 		}
 	})
 }
-
+/*
 func BenchmarkParallelGetShard(b *testing.B) {
 	cache := lru.NewSharded[string,int](1000,256)
 	cache.Put("key",1)

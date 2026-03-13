@@ -1,17 +1,14 @@
 package lru
 
-import (
-	"encoding/binary"
-	"fmt"
-	"hash/fnv"
-)
-
 type ShardedCache[K comparable, V any] struct {
 	shards []*Cache[K, V]
 	mask   uint64
 }
 
 func NewSharded[K comparable, V any](capacity int, shardCount int) *ShardedCache[K,V] {
+	if shardCount&(shardCount-1)!=0{
+		panic("ShardCount should be power of 2")
+	}
 	shards := make([]*Cache[K, V], shardCount)
 	perShard := capacity / shardCount // capacity of each shard
 	for i := 0; i < shardCount; i++ {
@@ -23,20 +20,27 @@ func NewSharded[K comparable, V any](capacity int, shardCount int) *ShardedCache
 	}
 }
 
-func (s *ShardedCache[K, V]) getShard(key K) *Cache[K, V] {
-	hash := fnv.New64a()
-	switch v := any(key).(type) {
-	case string:
-		hash.Write([]byte(v))
-	case int:
-		b := make([]byte,8)
-		binary.LittleEndian.PutUint64(b,uint64(v))
-		hash.Write(b)
-	default:
-		hash.Write([]byte(fmt.Sprintf("%v",v)))
-	}
-	index := hash.Sum64() & s.mask
+func (s *ShardedCache[K, V]) getShard(key K) *Cache[K,V]{
+	index := hashKey(key) & s.mask
 	return s.shards[index]
+}
+
+func hashKey[K comparable](key K) uint64{
+	switch v:= any(key).(type){
+	case int:
+		return uint64(v)
+	case uint64:
+		return v
+	case string:
+		var h uint64 = 1469598103934665603
+		for i:=0;i<len(v);i++{
+			h^=uint64(v[i])
+			h*=1099511628211
+		}
+		return h
+	default:
+		panic("Unsupported key type")
+	}
 }
 
 func (s *ShardedCache[K, V]) Get(key K) (V,bool) {
