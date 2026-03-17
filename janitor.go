@@ -23,6 +23,7 @@ func (c *Cache[K, V]) StartJanitor() {
 					if node.exp > 0 && nowTime > node.exp {
 						c.list.RemoveNode(node)
 						delete(c.items, key)
+						c.metrics.Expirations.Add(1)
 						node.prev = nil
 						node.next = nil
 						c.pool.Put(node)
