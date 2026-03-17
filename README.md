@@ -1,3 +1,4 @@
+![Go Version](https://img.shields.io/badge/Go-1.18+-blue)
 # ⚡ High-Performance LRU Cache in Go
 
 A production-grade **thread-safe LRU (Least Recently Used) cache** written in Go with:
@@ -6,11 +7,11 @@ A production-grade **thread-safe LRU (Least Recently Used) cache** written in Go
 -  TTL (expiration support)
 -  Concurrency-safe design
 -  Sharded cache for high throughput
--  Built-in metrics
+-  Built-in metrics (Atomic)
 -  Memory optimization using `sync.Pool`
 -  Background janitor for cleanup
 -  Extensive benchmark suite
-
+  
 ---
 
 ## 🚀 Features
@@ -48,7 +49,17 @@ A production-grade **thread-safe LRU (Least Recently Used) cache** written in Go
   - Tail → Least Recently Used
 
 ---
+## Installation
 
+### Using `go get`
+
+```bash
+go get github.com/Prem-099/lru-cache@v1.0.1
+```
+### Import
+```bash
+import "github.com/Prem-099/lru-cache"
+```
 ### Usage
 
 ### Basic
@@ -59,8 +70,10 @@ cache := lru.New[string,int](100)
 cache.Put("a", 1, 0)
 
 val, ok := cache.Get("a")
+
 //With TTL
 cache.Put("key", 100, 2*time.Second)
+
 //Sharded Cache
 sharded := lru.NewSharded[string, int](1000, 16)
 
@@ -69,7 +82,7 @@ val, ok := sharded.Get("a")
 
 //⚠️ shardCount must be a power of 2
 ```
-## Metrics
+### Metrics
 ```go
 stats := cache.Stats()
 fmt.Println(stats.HitRate())
