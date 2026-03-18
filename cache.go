@@ -19,7 +19,10 @@ type Cache[K comparable, V any] struct {
 }
 
 func New[K comparable, V any](capacity int) *Cache[K, V] {
-	return &Cache[K, V]{
+	if capacity <=0 {
+		capacity = 100
+	}
+	c :=  &Cache[K, V]{
 		capacity: capacity,
 		items:    make(map[K]*Node[K, V], capacity),
 		list:     &List[K, V]{},
@@ -29,6 +32,7 @@ func New[K comparable, V any](capacity int) *Cache[K, V] {
 			},
 		},
 	}
+	return c
 }
 
 var now int64
@@ -64,6 +68,9 @@ func (c *Cache[K, V]) Get(key K) (V, bool) {
 		return zero, false
 	}
 	c.moveCounter++
+	if c.moveCounter&16==0{
+		c.list.MoveToFront(node)
+	}
 	val := node.value
 	c.mux.Unlock()
 	c.metrics.Hits.Add(1)
